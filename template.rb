@@ -321,6 +321,10 @@ AllCops:
   end
 end
 
+def config_rspec
+  generate 'rspec:install'
+end
+
 
 
 
@@ -344,6 +348,7 @@ config_bootstrap
 # Configure Rubocop
 config_rubocop
 
+
 # After Bundle actions
 after_bundle do
   # Stop sprign to avoid further issues
@@ -357,6 +362,9 @@ after_bundle do
 
   # Configure Pundit
   config_pundit
+
+  # Configure rspec
+  config_rspec
 
   # Create database
   rails_command 'db:create'
