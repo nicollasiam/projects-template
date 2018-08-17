@@ -261,6 +261,66 @@ def config_pundit
   generate 'pundit:install'
 end
 
+def config_rubocop
+  create_file '.rubocop_todo.yml' do <<-EOF
+# Offense count: 2
+# Configuration parameters: CountComments, ExcludedMethods.
+Metrics/BlockLength:
+  Max: 298
+
+# Offense count: 2
+# Configuration parameters: CountComments.
+Metrics/MethodLength:
+  Max: 15
+
+# Offense count: 1
+# Cop supports --auto-correct.
+# Configuration parameters: AutoCorrect, EnforcedStyle.
+# SupportedStyles: nested, compact
+Style/ClassAndModuleChildren:
+  Exclude:
+    - 'test/test_helper.rb'
+
+# Offense count: 17
+Style/Documentation:
+  Enabled: false
+
+# Offense count: 2
+Style/MixinUsage:
+  Exclude:
+    - 'bin/setup'
+    - 'bin/update'
+
+# Offense count: 159
+# Configuration parameters: AllowHeredoc, AllowURI, URISchemes, IgnoreCopDirectives, IgnoredPatterns.
+# URISchemes: http, https
+Metrics/LineLength:
+  Max: 200
+
+Metrics/AbcSize:
+  Max: 25
+    EOF
+  end
+
+  create_file '.rubocop.yml' do <<-EOF
+inherit_from: .rubocop_todo.yml
+
+AllCops:
+  Include:
+    - app/**/*
+  Exclude:
+    - db/schema.rb
+    - Gemfile
+    - spec/**/*
+    - Guardfile
+    - config/**/*
+    - bin/**/*
+    - app/views/**/*
+    - app/assets/**/*
+    EOF
+  end
+end
+
 
 
 
@@ -280,6 +340,9 @@ remove_turbolinks if yes?("\nDeseja remover o turbolinks do Projeto (y/n)?")
 
 # Configure Bootstrap
 config_bootstrap
+
+# Configure Rubocop
+config_rubocop
 
 # After Bundle actions
 after_bundle do
