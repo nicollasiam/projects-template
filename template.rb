@@ -325,6 +325,15 @@ def config_rspec
   generate 'rspec:install'
 end
 
+def config_simplecov
+  insert_into_file 'spec/rails_helper.rb',
+  before: "require 'spec_helper'" do <<-RUBY
+require 'simplecov'
+SimpleCov.start\n
+RUBY
+  end
+end
+
 
 
 
@@ -365,6 +374,9 @@ after_bundle do
 
   # Configure rspec
   config_rspec
+
+  # Configure Simplecov
+  config_simplecov
 
   # Create database
   rails_command 'db:create'
