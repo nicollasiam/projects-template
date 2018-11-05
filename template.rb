@@ -170,6 +170,39 @@ def config_kaminari
   generate 'kaminari:views bootstrap4'
 end
 
+def config_redirect_authorization
+  insert_into_file 'app/controllers/application_controller.rb',
+  after: 'include Pundit' do <<-RUBY
+    before_action :redirect_to_no_body_page, if: :no_body?
+  RUBY
+  end
+
+  insert_into_file 'app/controllers/application_controller.rb',
+  after: 'rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized' do <<-RUBY
+  \n
+  protected
+
+  def redirect_to_no_body_page
+    flash[:alert] = 'Você ainda não foi liberado pelos Administradores.'
+    redirect_to(no_access_users_path)
+  end
+  RUBY
+  end
+
+  insert_into_file 'app/controllers/application_controller.rb',
+  before: 'def user_not_authorized' do <<-RUBY
+  def no_body?
+    # Get user's current page
+    path = request.env['PATH_INFO']
+    # Don't redirect anymore, if user is already in no_access page
+    return false if path.eql?('/users/no_access')
+
+    current_user&.areas&.any? && current_user.access_level.eql?('no_body')
+  end
+  \n
+  RUBY
+  end
+end
 
 def config_devise_application_controller
   authenticated_models = ''
@@ -181,7 +214,8 @@ def config_devise_application_controller
   end
 
   insert_into_file 'app/controllers/application_controller.rb',
-  after: 'include Pundit' do <<-RUBY
+  # after: 'include Pundit' do <<-RUBY
+  before: 'before_action :redirect_to_no_body_page, if: :no_body?' do <<-RUBY
   \n
   protect_from_forgery with: :exception
 
@@ -191,10 +225,9 @@ def config_devise_application_controller
   end
 
   insert_into_file 'app/controllers/application_controller.rb',
-  after: 'rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized' do <<-RUBY
+  # after: 'rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized' do <<-RUBY
+  after: 'protected' do <<-RUBY
   \n
-  protected
-
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_in, keys: %i[email password password_confirmation])
   end
@@ -296,6 +329,9 @@ after_bundle do
 
   # Configure Pundit
   config_pundit
+
+  # Configure logic to redirect not authorized users
+  config_redirect_authorization
 
   # Create database
   rails_command 'db:create'
