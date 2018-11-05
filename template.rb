@@ -37,7 +37,9 @@ def config_gems
   gem 'aws-ses', '~> 0.6.0', require: 'aws/ses'
 
   gem 'faker', git: 'https://github.com/stympy/faker.git', branch: 'master'
-  gem "pg"
+  gem 'pg'
+
+  gem 'paper_trail'
 
   gem_group :production do
     gem 'exception_notification'
